@@ -1,9 +1,11 @@
 var fs = require('fs');
 var cp = require('child_process');
 var queue = require('block-queue');
+var montage = require('./montage.js');
 
-function processFile(filename) {
+function processFile(filename, done) {
   console.log("process "+filename);
+  montage.processFile(filename, done);
 } 
 
 ////////////////////////////////////////////////////////////////////////
@@ -19,14 +21,10 @@ var ext = ".xml";
 
 var q = queue(1, function(task, done) {
     try {
-      processFile(prefix + "/" + task);
+      processFile(prefix + "/" + task, done);
     } catch(error) {
+      done();
       console.log("error in processing: "+error);
-    } finally {
-      setTimeout(function() {
-        console.log("done "+task);
-        done();
-      } , 10000);
     }
 });
 
