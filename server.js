@@ -11,7 +11,7 @@ function processFile(filename, done) {
 ////////////////////////////////////////////////////////////////////////
 //
 // test code to check directory for xml file changes, and process them
-// while a file is being processed, new ones are ignored
+// while a file is being processed, new ones are waiting in queue
 //
 ////////////////////////////////////////////////////////////////////////
 
