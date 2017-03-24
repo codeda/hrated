@@ -33,6 +33,12 @@ ENTRY* next;
 
 const int frame_size_v=W*H*4;
 
+void piccpy(unsigned char* src, int x, int y, int w, int h, unsigned char* dest) {
+    for (int i=y;i<y+h;i++) {
+      memcpy(dest+i*W*4+x*4,src+i*w*4,w*4);
+    }
+}
+
 // params:
 // 0 1080 520 100 100 /tmp/file.png 0 100
 // image width height x y path start_frame duration_frames
@@ -73,58 +79,50 @@ int main (int argc, char** argv) {
     }
     next=head;
 
-	int frame=0;
-	int unfinished=0;
-	int latest_position;
-	unsigned char* output=(unsigned char*)calloc(1,frame_size_v);
-	fprintf(stderr, "processing\n");
-	do {
-		fprintf(stderr, "%d\n", frame);
-		next=head;
-		// get next frame and apply it
-		unfinished=0;
-		latest_position=0;
-		memset(output, 0, frame_size_v);
-		while (next) {
-			if (next->position == frame) {
-				fprintf(stderr, "opening %s at %d\n", next->path, frame);
-				next->f=fopen(next->path, "r");
-				if (!next->f) {
-					fprintf(stderr,"error %d when opening file %s\n", errno, next->path);
-					return 1;
-				} else {
-					fprintf(stderr, "opened successfully\n");
-				}
-				// image is to be read once, applied all the time
-				if (next->media_type==IMAGE) {
-					int c = fread(next->frame, frame_size_v, 1, next->f);
-				}
-			}
-			if (!next->finished && (next->position+next->duration)<=frame) {
-				next->finished=1;
-			}
-			if (!next->finished && next->position<=frame && (next->position+next->duration)>frame) {
-				if (next->media_type==VIDEO) {
-                                    int c = fread(next->frame, frame_size_v, 1, next->f);
-				    if (c!=1) {
-					fprintf(stderr, "error reading, c=%d\n", c);
-					fclose(next->f);
-					next->finished=1;
-					free(next->frame);
-				    }
-                                 }
-				 if (!next->finished) {
-				      memcpy(output, next->frame, frame_size_v);
-				}
-			}
-			if (!next->finished) { unfinished++; }
-			next=next->next;
-		}
-		fwrite(output, frame_size_v, 1, stdout);
-		frame++;
-	}
-	while (unfinished);
-	fprintf(stderr,"done processing.\n");
-	free(output);
-	return 0;
+    int frame=0;
+    int unfinished=0;
+    int latest_position;
+    unsigned char* output=(unsigned char*)calloc(1,frame_size_v);
+    fprintf(stderr, "processing\n");
+    do {
+        fprintf(stderr, "%d\n", frame);
+        next=head;
+        // get next frame and apply it
+        unfinished=0;
+        latest_position=0;
+        memset(output, 0, frame_size_v);
+        while (next) {
+            if (next->position == frame) {
+                fprintf(stderr, "opening %s at %d\n", next->path, frame);
+                next->f=fopen(next->path, "r");
+                if (!next->f) {
+                    fprintf(stderr,"error %d when opening file %s\n", errno, next->path);
+                    return 1;
+                } else {
+                    fprintf(stderr, "opened successfully\n");
+                }
+                // image is to be read once, applied all the time
+                if (next->media_type==IMAGE) {
+                    next->frame=(unsigned char*)calloc(1,next->w*next->h*4);
+                    int c = fread(next->frame, next->w*next->h*4, 1, next->f);
+                }
+            }
+            if (!next->finished && (next->position+next->duration)<=frame) {
+                next->finished=1;
+            }
+            if (!next->finished && next->position<=frame && (next->position+next->duration)>frame) {
+                if (!next->finished) {
+                    piccpy(next->frame, next->x, next->y, next->w, next->h, output);
+                }
+            }
+            if (!next->finished) { unfinished++; }
+            next=next->next;
+        }
+        fwrite(output, frame_size_v, 1, stdout);
+        frame++;
+    }
+    while (unfinished);
+    fprintf(stderr,"done processing.\n");
+    free(output);
+    return 0;
 }
