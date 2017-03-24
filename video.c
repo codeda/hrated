@@ -38,7 +38,7 @@ const int frame_size_v=W*H*4;
 // image width height x y path start_frame duration_frames
 
 int main (int argc, char** argv) {
-    int files=argc/8;
+    int files=(argc-1)/8;
     fprintf(stderr, "argc %d, number of entries %d\n", argc, files);
     next = NULL;
     for (int i=0;i<files;i++) {
@@ -50,13 +50,13 @@ int main (int argc, char** argv) {
             head=next;
         }
 	next->media_type=IMAGE;
-        next->w=atoi(argv[i*8+1]);
-        next->h=atoi(argv[i*8+2]);
-        next->x=atoi(argv[i*8+3]);
-        next->y=atoi(argv[i*8+4]);
-        next->path=argv[i*8+5];
-        next->position=atoi(argv[i*8+6]);
-        next->duration=atoi(argv[i*8+7]);
+        next->w=atoi(argv[i*8+2]);
+        next->h=atoi(argv[i*8+3]);
+        next->x=atoi(argv[i*8+4]);
+        next->y=atoi(argv[i*8+5]);
+        next->path=argv[i*8+6];
+        next->position=atoi(argv[i*8+7]);
+        next->duration=atoi(argv[i*8+8]);
     }
     next=head;
     while (next) {

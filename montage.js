@@ -32,7 +32,7 @@ exports.processFile = function(filename, done) {
             return parseInt(a.layer) - parseInt(b.layer);
           }
         });
-        var cmdline = "./video ";
+        var cmdline = "/home/ubuntu/hrated/video ";
         for (var item of arr) {
           item.newName = makeNewName(item.url[0]);
           var cmd = 'wget "'+item.url[0]+'" --output-document="'+item.newName+'"';
@@ -43,13 +43,24 @@ exports.processFile = function(filename, done) {
             item.pipe = getPipe();
             item.ffmpeg = 'ffmpeg -i "'+item.newName+'" -s '+item.mediaWidth[0]+'x'+item.mediaHeight[0]+' -vframes 1 -f rawvideo -pix_fmt argb '+item.pipe;
             console.log(item.ffmpeg);
-            cmdline += ("0 "+item.mediaWidth[0]+" "+item.mediaHeight[0]+" "+item.xPosition[0]+" "+item.yPosition[0]+" "+item.newName+" "+parseInt(item.startPoint[0])*30/1000+" "+(parseInt(item.endPoint[0])-parseInt(item.startPoint[0]))*30/1000+" ");
+            cp.exec(item.ffmpeg, (error,stdout,stderr) => {
+              if (error) {
+                console.error('exec error: ${error}');
+                return;
+              }
+              console.log("stdout: ${stdout}");
+              console.log("stderr: ${stderr}");
+            });
+            cmdline += ("0 "+item.mediaWidth[0]+" "+item.mediaHeight[0]+" "+item.xPosition[0]+" "+item.yPosition[0]+" "+item.pipe+" "+parseInt(item.startPoint[0])*30/1000+" "+(parseInt(item.endPoint[0])-parseInt(item.startPoint[0]))*30/1000+" ");
           }
         } 
         cmdline += "| ffmpeg -s 1280x720 -r 30 -an -f rawvideo -pix_fmt argb -i - /tmp/output.mp4";
-        console.log('Done '+cmdline);
+        setTimeout(function() {
+          console.log('Done '+cmdline);
+          cp.execSync(cmdline);
+          console.log("done with "+filename);
+          done();
+        }, 1000);
     });
   });
-  console.log("done with "+filename);
-  done();
 }
