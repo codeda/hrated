@@ -44,20 +44,20 @@ void piccpy0(unsigned char* src, int x, int y, int w, int h, unsigned char* dest
 void mul(unsigned char* src, unsigned char* dest, int a) {
     int v = dest[0];
     int o = src[0];
-    v=v*a+o*(255-a);
+    v=o*a+v*(255-a);
     v/=256;
-    dest[0]=(char)v; 
+    dest[0]=(unsigned char)v; 
 }
 
 void piccpy(unsigned char* src, int x, int y, int w, int h, unsigned char* dest) {
     for (int i=y;i<y+h;i++) {
         for (int j=x;j<x+w;j++) {
             // overlay
-            int a=(int)(unsigned char)*(src+i*h*4+j*4);
-            dest[i*H*4+j*4]=255;
- 	    mul(src+(i-y)*h*4+(j-x)*4+1, dest+i*H*4+j*4+1, a);
-            mul(src+(i-y)*h*4+(j-x)*4+3, dest+i*H*4+j*4+2, a);
-            mul(src+(i-y)*h*4+(j-x)*4+2, dest+i*H*4+j*4+3, a);
+            int a=src[(i-y)*w*4+(j-x)*4] & 0xFF;
+            dest[i*W*4+j*4]=255;
+ 	    mul(src+(i-y)*w*4+(j-x)*4+1, dest+i*W*4+j*4+1, a);
+            mul(src+(i-y)*w*4+(j-x)*4+2, dest+i*W*4+j*4+2, a);
+            mul(src+(i-y)*w*4+(j-x)*4+3, dest+i*W*4+j*4+3, a);
         }
     }
 }
@@ -134,7 +134,7 @@ int main (int argc, char** argv) {
             }
             if (!next->finished && next->position<=frame && (next->position+next->duration)>frame) {
                 if (!next->finished) {
-                    piccpy0(next->frame, next->x, next->y, next->w, next->h, output);
+                    piccpy(next->frame, next->x, next->y, next->w, next->h, output);
                 }
             }
             if (!next->finished) { unfinished++; }
