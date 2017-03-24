@@ -41,7 +41,7 @@ exports.processFile = function(filename, done) {
           console.log(item);
           if (item.mediaType[0]==='image') {
             item.pipe = getPipe();
-            item.ffmpeg = 'ffmpeg -i "'+item.newName+'" -s '+item.mediaWidth[0]+'x'+item.mediaHeight[0]+' -vframes 1 -f rawvideo -pix_fmt argb '+item.pipe;
+            item.ffmpeg = 'ffmpeg -i "'+item.newName+'" -s '+item.mediaWidth[0]+'x'+item.mediaHeight[0]+' -vframes 1 -f rawvideo -pix_fmt argb -y '+item.pipe;
             console.log(item.ffmpeg);
             cp.exec(item.ffmpeg, (error,stdout,stderr) => {
               if (error) {
@@ -54,7 +54,7 @@ exports.processFile = function(filename, done) {
             cmdline += ("0 "+item.mediaWidth[0]+" "+item.mediaHeight[0]+" "+item.xPosition[0]+" "+item.yPosition[0]+" "+item.pipe+" "+parseInt(item.startPoint[0])*30/1000+" "+(parseInt(item.endPoint[0])-parseInt(item.startPoint[0]))*30/1000+" ");
           }
         } 
-        cmdline += "| ffmpeg -s 1280x720 -r 30 -an -f rawvideo -pix_fmt argb -i - /tmp/output.mp4";
+        cmdline += "| ffmpeg -s 1280x720 -r 30 -an -f rawvideo -pix_fmt argb -i - -y /tmp/output.mp4";
         setTimeout(function() {
           console.log('Done '+cmdline);
           cp.execSync(cmdline);
