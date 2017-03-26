@@ -50,14 +50,25 @@ void mul(unsigned char* src, unsigned char* dest, int a) {
 }
 
 void piccpy(unsigned char* src, int x, int y, int w, int h, unsigned char* dest) {
+    unsigned int *sargb = (unsigned int*)src;
+    unsigned int *dargb = (unsigned int*)dest;
+
     for (int i=y;i<y+h;i++) {
         for (int j=x;j<x+w;j++) {
-            // overlay
-            int a=src[(i-y)*w*4+(j-x)*4] & 0xFF;
-            dest[i*W*4+j*4]=255;
- 	    mul(src+(i-y)*w*4+(j-x)*4+1, dest+i*W*4+j*4+1, a);
-            mul(src+(i-y)*w*4+(j-x)*4+2, dest+i*W*4+j*4+2, a);
-            mul(src+(i-y)*w*4+(j-x)*4+3, dest+i*W*4+j*4+3, a);
+            // full opacity?
+            if ((sargb[(i-y)*w+(j-x)] & 0xFF) == 0xFF) {
+                dargb[i*W+j]=sargb[(i-y)*w+(j-x)];
+            } else {
+                // not full opacity but not full transparency either?
+                if ((sargb[(i-y)*w+(j-x)] & 0xFF) >0) {
+                    // overlay
+                    int a=src[(i-y)*w*4+(j-x)*4] & 0xFF;
+                    dest[i*W*4+j*4]=255;
+ 	            mul(src+(i-y)*w*4+(j-x)*4+1, dest+i*W*4+j*4+1, a);
+                    mul(src+(i-y)*w*4+(j-x)*4+2, dest+i*W*4+j*4+2, a);
+                    mul(src+(i-y)*w*4+(j-x)*4+3, dest+i*W*4+j*4+3, a);
+                }
+            }
         }
     }
 }
