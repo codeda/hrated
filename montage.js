@@ -39,19 +39,25 @@ exports.processFile = function(filename, done) {
           console.log("exec: "+cmd);
           cp.execSync(cmd);          
           console.log(item);
-          if (item.mediaType[0]==='image') {
+          if (item.mediaType[0]==='image' || item.mediaType[0]==='video') {
+            var type=0;
+            var additional_params=' -vframes 1';
+            if (item.mediaType[0]==='video') {
+              type=1;
+              additional_params=' -r 30';
+            } 
             item.pipe = getPipe();
-            item.ffmpeg = 'ffmpeg -i "'+item.newName+'" -s '+item.mediaWidth[0]+'x'+item.mediaHeight[0]+' -vframes 1 -f rawvideo -pix_fmt argb -y '+item.pipe;
+            item.ffmpeg = 'ffmpeg -i "'+item.newName+'" -s '+item.mediaWidth[0]+'x'+item.mediaHeight[0]+additional_params+' -f rawvideo -pix_fmt argb -y '+item.pipe;
             console.log(item.ffmpeg);
             cp.exec(item.ffmpeg, (error,stdout,stderr) => {
               if (error) {
-                console.error('exec error: ${error}');
+                console.error('exec error: '+error);
                 return;
               }
-              console.log("stdout: ${stdout}");
-              console.log("stderr: ${stderr}");
+              console.log("stdout: "+stdout);
+              console.log("stderr: "+stderr);
             });
-            cmdline += ("0 "+item.mediaWidth[0]+" "+item.mediaHeight[0]+" "+item.xPosition[0]+" "+item.yPosition[0]+" "+item.pipe+" "+parseInt(item.startPoint[0])*30/1000+" "+(parseInt(item.endPoint[0])-parseInt(item.startPoint[0]))*30/1000+" ");
+            cmdline += (type+" "+item.mediaWidth[0]+" "+item.mediaHeight[0]+" "+item.xPosition[0]+" "+item.yPosition[0]+" "+item.pipe+" "+parseInt(item.startPoint[0])*30/1000+" "+(parseInt(item.endPoint[0])-parseInt(item.startPoint[0]))*30/1000+" ");
           }
         } 
         cmdline += "| ffmpeg -s 1280x720 -r 30 -an -f rawvideo -pix_fmt argb -i - -y /tmp/output.mp4";

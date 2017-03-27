@@ -89,7 +89,7 @@ int main (int argc, char** argv) {
             next=(ENTRY*)calloc(1, sizeof(ENTRY));
             head=next;
         }
-	next->media_type=IMAGE;
+	next->media_type=atoi(argv[i*8+1]);
         next->w=atoi(argv[i*8+2]);
         next->h=atoi(argv[i*8+3]);
         next->x=atoi(argv[i*8+4]);
@@ -134,16 +134,33 @@ int main (int argc, char** argv) {
                 } else {
                     fprintf(stderr, "opened successfully\n");
                 }
+                next->frame=(unsigned char*)calloc(1,next->w*next->h*4);
                 // image is to be read once, applied all the time
                 if (next->media_type==IMAGE) {
-                    next->frame=(unsigned char*)calloc(1,next->w*next->h*4);
-                    int c = fread(next->frame, next->w*next->h*4, 1, next->f);
+                   int nbytes = next->w*next->h*4;                   
+                   int c = fread(next->frame, nbytes, 1, next->f);
+                   if (c != 1) {
+                       fprintf(stderr, "error reading, c=%d\n", c);
+                       fclose(next->f);
+                       next->finished=1;
+                       free(next->frame);
+                   }
                 }
             }
             if (!next->finished && (next->position+next->duration)<=frame) {
                 next->finished=1;
             }
             if (!next->finished && next->position<=frame && (next->position+next->duration)>frame) {
+                if (next->media_type==VIDEO) {
+                   int nbytes = next->w*next->h*4;
+                   int c = fread(next->frame, nbytes, 1, next->f); 
+                   if (c != 1) {
+                       fprintf(stderr, "error reading, c=%d\n", c);
+                       fclose(next->f);
+                       next->finished=1;
+                       free(next->frame);
+                   }
+                }
                 if (!next->finished) {
                     piccpy(next->frame, next->x, next->y, next->w, next->h, output);
                 }
