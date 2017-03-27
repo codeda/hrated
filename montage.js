@@ -26,11 +26,7 @@ exports.processFile = function(filename, done) {
     parser.parseString(data, function (err, result) {
         var arr = result.root.item;
         arr.sort(function(a,b) {
-          if (parseInt(a.layer) - parseInt(b.layer) === 0) {
-	    return parseInt(a.order) - parseInt(b.order);
-          } else {
-            return parseInt(a.layer) - parseInt(b.layer);
-          }
+          return parseInt(a.layer) - parseInt(b.layer);
         });
         var cmdline = "/home/ubuntu/hrated/video ";
         for (var item of arr) {
