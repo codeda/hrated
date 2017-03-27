@@ -39,15 +39,20 @@ exports.processFile = function(filename, done) {
           console.log("exec: "+cmd);
           cp.execSync(cmd);          
           console.log(item);
-          if (item.mediaType[0]==='image' || item.mediaType[0]==='video') {
+          if (item.mediaType[0]==='image' || item.mediaType[0]==='video' || item.mediaType[0]==='gif') {
             var type=0;
-            var additional_params=' -vframes 1';
-            if (item.mediaType[0]==='video') {
-              type=1;
-              additional_params=' -r 30';
-            } 
             item.pipe = getPipe();
-            item.ffmpeg = 'ffmpeg -i "'+item.newName+'" -s '+item.mediaWidth[0]+'x'+item.mediaHeight[0]+additional_params+' -f rawvideo -pix_fmt argb -y '+item.pipe;
+            if (item.mediaType[0]==='image') {
+              type=0;
+              item.ffmpeg = 'ffmpeg -i "'+item.newName+'" -s '+item.mediaWidth[0]+'x'+item.mediaHeight[0]+
+                ' -vframes 1 -f rawvideo -pix_fmt argb -y '+item.pipe;            
+            } else {
+              type=1;
+              item.ffmpeg = 'ffmpeg -re -f lavfi -i "movie=filename='+item.newName+
+                ':loop=0, setpts=N/(FRAME_RATE*TB)" -vframes '+(parseInt(item.endPoint[0])-parseInt(item.startPoint[0]))*30/1000+
+                ' -r 30 -s '+item.mediaWidth[0]+'x'+item.mediaHeight[0]+
+                ' -f rawvideo -an -pix_fmt argb -y '+item.pipe;
+            }
             console.log(item.ffmpeg);
             cp.exec(item.ffmpeg, (error,stdout,stderr) => {
               if (error) {
