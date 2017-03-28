@@ -54,10 +54,10 @@ void piccpy(unsigned char* src, int x, int y, int w, int h, unsigned char* dest)
     unsigned int *sargb = (unsigned int*)src;
     unsigned int *dargb = (unsigned int*)dest;
 
-    int sx=x; if (sx>W) { sx = W; }; if (sx<0) { sx = 0 };
-    int ex=x+w; if (ex>W) { ex = W; }; if (ex<0) { ex = 0 };
-    int sy=y; if (sy>H) { sy = H; }; if (sy<0} { sy = 0 };
-    int ey=y+h; if (ey>H) { ey = H; }; if (ey<0} { ey =  0 };
+    int sx=x; if (sx>W) { sx = W; }; if (sx<0) { sx = 0; };
+    int ex=x+w; if (ex>W) { ex = W; }; if (ex<0) { ex = 0; };
+    int sy=y; if (sy>H) { sy = H; }; if (sy<0) { sy = 0; };
+    int ey=y+h; if (ey>H) { ey = H; }; if (ey<0) { ey =  0; };
 
     for (int i=sy;i<ey;i++) {
         for (int j=ex;j<ex;j++) {
