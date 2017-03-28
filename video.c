@@ -4,6 +4,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #define W 1280
 #define H 720 
@@ -97,6 +98,10 @@ int main (int argc, char** argv) {
         next->path=argv[i*8+6];
         next->position=atoi(argv[i*8+7]);
         next->duration=atoi(argv[i*8+8]);
+        // will terminate when the stream ends
+        if (next->duration==0) {
+          next->duration=INT_MAX;
+        }
     }
     next=head;
     while (next) {
