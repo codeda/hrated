@@ -54,8 +54,13 @@ void piccpy(unsigned char* src, int x, int y, int w, int h, unsigned char* dest)
     unsigned int *sargb = (unsigned int*)src;
     unsigned int *dargb = (unsigned int*)dest;
 
-    for (int i=y;i<y+h;i++) {
-        for (int j=x;j<x+w;j++) {
+    int sx=x; if (sx>W) { sx = W; };
+    int ex=x+w; if (ex>W) { ex = W; };
+    int sy=y; if (sy>H) { sy = H; };
+    int ey=y+h; if (ey>H) { ey = H; };
+
+    for (int i=sy;i<ey;i++) {
+        for (int j=sx;j<ey;j++) {
             // full opacity?
             if ((sargb[(i-y)*w+(j-x)] & 0xFF) == 0xFF) {
                 dargb[i*W+j]=sargb[(i-y)*w+(j-x)];
