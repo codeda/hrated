@@ -77,8 +77,13 @@ exports.processFile = function(filename, done) {
                 ' -vframes 1 -f rawvideo -pix_fmt argb -y '+item.pipe;            
             } else {
               type=1;
-              item.ffmpeg = 'ffmpeg -re -f lavfi -i "movie=filename='+item.newName+
-                ':loop=0, setpts=N/(FRAME_RATE*TB)" -ss '+parseInt(item.trimStart)*30/1000;
+              if (item.mediaType==='gif') {
+                item.ffmpeg = 'ffmpeg -re -f lavfi -i "movie=filename='+item.newName+
+                  ':loop=0, setpts=N/(FRAME_RATE*TB)"';
+              } else {
+                item.ffmpeg = "ffmpeg -i "+item.newName;
+              }
+              item.ffmpeg+=' -ss '+parseInt(item.trimStart)*30/1000;
               // if there is trim, add it
               if (parseInt(item.trimEnd) !== -1) {
                 item.ffmpeg += ' -vframes '+(parseInt(item.trimEnd)-parseInt(item.trimStart))*30/1000;
