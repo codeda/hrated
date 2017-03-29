@@ -36,6 +36,44 @@ function convert(item, field, defaultValue) {
   }
 }
 
+function processItem(item) {
+  var type=0;
+  item.pipe = getPipe();
+  if (item.mediaType==='image') {
+    type=0;
+    item.ffmpeg = 'ffmpeg -i "'+item.newName+'" -s '+item.mediaWidth+'x'+item.mediaHeight+
+      ' -vframes 1 -f rawvideo -pix_fmt argb -y '+item.pipe;
+  } else {
+    type=1;
+    if (item.mediaType==='gif') {
+      item.ffmpeg = 'ffmpeg -re -f lavfi -i "movie=filename='+item.newName+
+        ':loop=0, setpts=N/(FRAME_RATE*TB)"';
+    } else {
+      item.ffmpeg = "ffmpeg -i "+item.newName;
+    }
+    item.ffmpeg+=' -ss '+parseInt(item.trimStart)/1000;
+    // if there is trim, add it
+    if (parseInt(item.trimEnd) !== -1) {
+      item.ffmpeg += ' -vframes '+(parseInt(item.trimEnd)-parseInt(item.trimStart))*30/1000;
+    };
+    item.ffmpeg += ' -r 30 -s '+item.mediaWidth+'x'+item.mediaHeight;
+    item.ffmpeg += ' -f rawvideo -an -pix_fmt argb -y '+item.pipe;
+  }
+  console.log(item.ffmpeg);
+  cp.exec(item.ffmpeg, (error,stdout,stderr) => {
+    if (error) {
+      console.error('exec error: '+error);
+      return;
+    }
+    console.log("stdout: "+stdout);
+    console.log("stderr: "+stderr);
+  });
+  return (type+" "+item.mediaWidth+" "+item.mediaHeight+" "+
+    item.xPosition+" "+item.yPosition+" "+
+    item.pipe+" "+parseInt(item.startPoint)*30/1000+" "+
+    (parseInt(item.endPoint)-parseInt(item.startPoint))*30/1000+" ");
+}
+
 exports.processFile = function(filename, done) {
   var parser = new xml2js.Parser();
   fs.readFile(filename, function(err, data) {
@@ -69,38 +107,8 @@ exports.processFile = function(filename, done) {
           cp.execSync(cmd);          
           console.log(item);
           if (item.mediaType==='image' || item.mediaType==='video' || item.mediaType==='gif') {
-            var type=0;
-            item.pipe = getPipe();
-            if (item.mediaType==='image') {
-              type=0;
-              item.ffmpeg = 'ffmpeg -i "'+item.newName+'" -s '+item.mediaWidth+'x'+item.mediaHeight+
-                ' -vframes 1 -f rawvideo -pix_fmt argb -y '+item.pipe;            
-            } else {
-              type=1;
-              if (item.mediaType==='gif') {
-                item.ffmpeg = 'ffmpeg -re -f lavfi -i "movie=filename='+item.newName+
-                  ':loop=0, setpts=N/(FRAME_RATE*TB)"';
-              } else {
-                item.ffmpeg = "ffmpeg -i "+item.newName;
-              }
-              item.ffmpeg+=' -ss '+parseInt(item.trimStart)/1000;
-              // if there is trim, add it
-              if (parseInt(item.trimEnd) !== -1) {
-                item.ffmpeg += ' -vframes '+(parseInt(item.trimEnd)-parseInt(item.trimStart))*30/1000;
-              };
-              item.ffmpeg += ' -r 30 -s '+item.mediaWidth+'x'+item.mediaHeight;
-              item.ffmpeg += ' -f rawvideo -an -pix_fmt argb -y '+item.pipe;
-            }
-            console.log(item.ffmpeg);
-            cp.exec(item.ffmpeg, (error,stdout,stderr) => {
-              if (error) {
-                console.error('exec error: '+error);
-                return;
-              }
-              console.log("stdout: "+stdout);
-              console.log("stderr: "+stderr);
-            });
-            cmdline += (type+" "+item.mediaWidth+" "+item.mediaHeight+" "+item.xPosition+" "+item.yPosition+" "+item.pipe+" "+parseInt(item.startPoint)*30/1000+" "+(parseInt(item.endPoint)-parseInt(item.startPoint))*30/1000+" ");
+            var cmd = processItem(item);
+            cmdline += cmd;
           }
         } 
         cmdline += "| ffmpeg -s "+W+"x"+H+" -r 30 -an -f rawvideo -pix_fmt argb -i - -y /tmp/output.mp4";
