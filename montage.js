@@ -91,6 +91,9 @@ exports.processFile = function(filename, done) {
           convert(item, "url");
           convert(item, "trimStart", 0);
           convert(item, "trimEnd", -1);
+          if (parseInt(item.trimEnd)===0) {
+            item.trimEnd=-1;
+          }
           convert(item, "startPoint", 0);
           // image's full duration is infinite, as image is static.
           // gif's too because gifs are looped
