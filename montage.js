@@ -25,7 +25,7 @@ function getPipe() {
 
 function convert(item, field, defaultValue) {
   if (item[field] != undefined && item[field] != null && 
-      item[field][0] != undefined && item[field][0] != null) {
+      item[field][0] != undefined && item[field][0] != null && item[field][0] != '') {
     item[field] = item[field][0];
   } else {
     if (defaultValue != undefined && defaultValue != null) {
@@ -83,7 +83,7 @@ exports.processFile = function(filename, done) {
               } else {
                 item.ffmpeg = "ffmpeg -i "+item.newName;
               }
-              item.ffmpeg+=' -ss '+parseInt(item.trimStart)*30/1000;
+              item.ffmpeg+=' -ss '+parseInt(item.trimStart)/1000;
               // if there is trim, add it
               if (parseInt(item.trimEnd) !== -1) {
                 item.ffmpeg += ' -vframes '+(parseInt(item.trimEnd)-parseInt(item.trimStart))*30/1000;
