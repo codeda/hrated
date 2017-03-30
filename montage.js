@@ -75,6 +75,11 @@ function processItem(item) {
 }
 
 exports.processFile = function(filename, done) {
+  try {
+    cp.execSync("/bin/bash -c 'rm /tmp/output.mp4'");
+  } catch(e) {
+    console.log(e);
+  }
   var parser = new xml2js.Parser();
   fs.readFile(filename, function(err, data) {
     parser.parseString(data, function (err, result) {
@@ -114,11 +119,12 @@ exports.processFile = function(filename, done) {
             cmdline += cmd;
           }
         } 
-        cmdline += "| ffmpeg -s "+W+"x"+H+" -r 30 -an -f rawvideo -pix_fmt argb -i - -y /tmp/output.mp4";
+        cmdline += "| ffmpeg -s "+W+"x"+H+" -r 30 -an -f rawvideo -pix_fmt argb -i - -y /tmp/output_tmp.mp4";
         setTimeout(function() {
           console.log('Done '+cmdline);
           cp.execSync(cmdline);
           console.log("done with "+filename);
+          cp.execSync("/bin/bash -c 'mv /tmp/output_tmp.mp4 /tmp/output.mp4'");
           done();
         }, 1000);
     });
